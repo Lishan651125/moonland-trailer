@@ -1,0 +1,223 @@
+:root {
+  --ink: #f5e4c8;
+  --gold: #f5b96b;
+  --night: #0b1933;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 20%, #253a58 0, #090f1c 62%);
+  color: var(--ink);
+  font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
+}
+
+.player-shell { width: min(100vw, 1536px); padding: clamp(12px, 2vw, 30px); }
+
+.stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  isolation: isolate;
+  background: #101725;
+  box-shadow: 0 25px 80px #000a;
+}
+
+.scenes, .scene, .art, .depth-field, .atmosphere { position: absolute; inset: 0; }
+
+.scene {
+  --image: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1200ms ease-in-out;
+  background: #101725;
+}
+
+.scene.active { opacity: 1; }
+
+.art, .depth-field {
+  background-image: var(--image);
+  background-position: center;
+  background-size: cover;
+  will-change: transform;
+}
+
+.art { animation: gentle-push 4.7s ease-in-out both; }
+.scene[data-move="drift-right"] .art { animation-name: drift-right; }
+.scene[data-move="drift-left"] .art { animation-name: drift-left; }
+.scene[data-move="pull-back"] .art { animation-name: pull-back; }
+
+/* A masked, softly blurred image plane gives a safe depth cue without cutting up characters. */
+.depth-field {
+  inset: -4%;
+  opacity: .16;
+  filter: blur(13px) saturate(1.12);
+  transform: scale(1.09);
+  mix-blend-mode: screen;
+  -webkit-mask-image: linear-gradient(90deg, #0000 0 9%, #000 30% 70%, #0000 91% 100%);
+  mask-image: linear-gradient(90deg, #0000 0 9%, #000 30% 70%, #0000 91% 100%);
+  animation: depth-drift 4.7s ease-in-out both;
+}
+
+.atmosphere { overflow: hidden; pointer-events: none; mix-blend-mode: screen; }
+.color-wash {
+  opacity: .28;
+  background: linear-gradient(120deg, #e56b2a44, transparent 34%, #10284e55 76%);
+  mix-blend-mode: soft-light;
+  animation: color-shift 4.7s ease-in-out both;
+}
+.graphic-lines { opacity: .5; mix-blend-mode: screen; }
+.graphic-lines::before, .graphic-lines::after {
+  content: "";
+  position: absolute;
+  height: 1px;
+  width: 34%;
+  background: linear-gradient(90deg, transparent, #ffdb9b, transparent);
+  transform-origin: left center;
+  animation: line-sweep 4.7s cubic-bezier(.2,.8,.2,1) both;
+}
+.graphic-lines::before { top: 21%; left: 0; }
+.graphic-lines::after { bottom: 20%; right: 0; transform-origin: right center; animation-delay: 230ms; }
+.scene-card {
+  position: absolute;
+  z-index: 3;
+  left: 4.5%; top: 8%;
+  display: grid;
+  gap: 4px;
+  text-shadow: 0 2px 16px #000b;
+  opacity: 0;
+  transform: translateX(-17px);
+}
+.scene-card .count { color: #ffd696; font: 600 clamp(10px, .8vw, 13px)/1.1 system-ui, sans-serif; letter-spacing: .18em; }
+.scene-card .title { color: #fff7e7; font-size: clamp(18px, 2vw, 31px); font-weight: 500; letter-spacing: .08em; }
+.scene.active .scene-card { animation: card-in 4.7s ease both; }
+.daylight {
+  opacity: .34;
+  background: linear-gradient(112deg, #ffe0a266 3%, #ffe3a20e 36%, #0000 63%);
+  transform: translateX(-8%);
+  animation: light-sweep 4.7s ease-in-out both;
+}
+.nightglow {
+  opacity: .42;
+  background:
+    radial-gradient(ellipse at 74% 43%, #ffb1502b 0 1%, transparent 8%),
+    radial-gradient(ellipse at 59% 66%, #ec8c4240 0 1%, transparent 11%),
+    radial-gradient(ellipse at 18% 78%, #4c7eff2b 0 1%, transparent 15%);
+  animation: city-pulse 2.9s ease-in-out infinite alternate;
+}
+.candle-glow {
+  opacity: .18;
+  background: radial-gradient(circle at 18% 74%, #ffc55fbf 0, #ffac3a4a 7%, transparent 18%);
+  animation: candle-flicker 1.8s ease-in-out infinite alternate;
+}
+.steam { position: absolute; width: 12%; height: 34%; left: 49%; bottom: 23%; opacity: .45; filter: blur(4px); }
+.steam::before, .steam::after {
+  content: "";
+  position: absolute;
+  width: 35%; height: 70%;
+  border-radius: 50%;
+  border-left: 3px solid #fff8;
+  transform: rotate(18deg);
+  animation: steam-rise 3.2s ease-in-out infinite;
+}
+.steam::after { left: 34%; animation-delay: -1.5s; opacity: .62; transform: rotate(-18deg); }
+
+/* The original phone notice is retained; this halo only animates its arrival. */
+.notice-halo {
+  position: absolute;
+  left: 20%; top: 23%; width: 25%; height: 15%;
+  border-radius: 20px;
+  opacity: 0;
+  background: radial-gradient(ellipse, #fff4cf44 0, #fff4cf10 45%, transparent 72%);
+  filter: blur(8px);
+}
+.scene.active .notice-halo { animation: notice-arrive 4.7s ease-out both; }
+
+/* The end-card text is already part of 19.png. This veil gently reveals it after two seconds. */
+.end-reveal {
+  position: absolute;
+  left: 50%; right: 5%; top: 23%; bottom: 34%;
+  opacity: .42;
+  background: linear-gradient(90deg, #192c4c55, #11213f96);
+  filter: blur(9px);
+}
+.scene.active .end-reveal { animation: end-text-reveal 4.7s ease both; }
+
+.caption {
+  position: absolute;
+  z-index: 8;
+  left: 4%; bottom: 7%;
+  max-width: 55%;
+  font-size: clamp(12px, 1.35vw, 19px);
+  letter-spacing: .08em;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 500ms ease, transform 500ms ease;
+  text-shadow: 0 2px 16px #000;
+}
+.caption.visible { opacity: .86; transform: translateY(0); }
+
+.film-grain {
+  position: absolute; inset: -50%; z-index: 7; pointer-events: none;
+  opacity: .055;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+  animation: grain 180ms steps(2) infinite;
+}
+.letterbox { position: absolute; inset: 0; z-index: 9; pointer-events: none; box-shadow: inset 0 2.4vw #0005, inset 0 -2.4vw #0005; }
+
+.progress { position: absolute; z-index: 10; left: 0; right: 0; bottom: 0; height: 3px; background: #fff2; }
+.progress span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #f0a952, #fff1bb); }
+.pause-button {
+  position: absolute; z-index: 11; top: 4%; right: 3%;
+  width: 38px; height: 38px; border: 1px solid #fff5; border-radius: 50%;
+  background: #08112466; color: #fff; cursor: pointer; font-size: 17px; line-height: 1;
+  opacity: .75; transition: opacity 180ms ease, transform 180ms ease;
+}
+.pause-button:hover { opacity: 1; transform: scale(1.06); }
+.stage.paused *, .stage.paused *::before, .stage.paused *::after { animation-play-state: paused !important; }
+.hint { margin: 10px 0 0; text-align: center; color: #d8c5a9a6; font-size: 13px; }
+
+.opening-card {
+  position: absolute; z-index: 20; inset: 0;
+  display: grid; align-content: center; justify-items: center; gap: clamp(12px, 1.8vw, 24px);
+  padding: 8%; text-align: center;
+  background: linear-gradient(90deg, #071224cc 0, #10203a73 48%, #19142a55 100%);
+  transition: opacity 900ms ease, visibility 900ms ease;
+}
+.opening-card::before, .opening-card::after { content: ""; position: absolute; pointer-events: none; }
+.opening-card::before { width: min(78vw, 960px); height: min(78vw, 960px); border: 1px solid #f8bd6a55; border-radius: 50%; transform: translate(-30%, 7%) rotate(-21deg); }
+.opening-card::after { inset: 10% 16%; border-top: 1px solid #fff2; border-bottom: 1px solid #fff2; }
+.opening-card.hidden { opacity: 0; visibility: hidden; }
+.eyebrow { z-index: 1; margin: 0; color: #ffe4b4; font-size: clamp(10px, 1.1vw, 16px); letter-spacing: .23em; }
+.opening-card h1 { z-index: 1; margin: 0; color: #fff8e9; font-size: clamp(34px, 5.4vw, 80px); font-weight: 400; letter-spacing: .12em; line-height: 1.25; text-shadow: 0 8px 30px #0009; }
+.opening-card h1 span { color: #ffcc78; }
+.start-button { z-index: 1; border: 1px solid #ffe0aa99; background: #e88d3d2e; padding: 13px 22px; color: #fff7e9; font: 500 clamp(14px, 1.25vw, 18px)/1 "Microsoft JhengHei", sans-serif; letter-spacing: .08em; cursor: pointer; transition: background 200ms ease, transform 200ms ease; }
+.start-button:hover { background: #e88d3d69; transform: translateY(-2px); }
+.start-button span { display: inline-block; margin-left: 12px; color: #ffcf89; }
+.audio-note { z-index: 1; margin: 0; color: #e4d7c5aa; font-size: 12px; letter-spacing: .08em; }
+
+@keyframes gentle-push { from { transform: scale(1.015) translate(0, 0); } to { transform: scale(1.075) translate(-.7%, -.5%); } }
+@keyframes drift-right { from { transform: scale(1.07) translate(-1.4%, 0); } to { transform: scale(1.09) translate(1.2%, -.4%); } }
+@keyframes drift-left { from { transform: scale(1.09) translate(1.1%, 0); } to { transform: scale(1.07) translate(-1%, -.5%); } }
+@keyframes pull-back { from { transform: scale(1.09); } to { transform: scale(1.025) translate(.3%, -.2%); } }
+@keyframes depth-drift { from { transform: scale(1.11) translate(-1.5%, 0); } to { transform: scale(1.16) translate(1.5%, -.5%); } }
+@keyframes light-sweep { from { transform: translateX(-11%); opacity: .18; } to { transform: translateX(7%); opacity: .42; } }
+@keyframes city-pulse { from { opacity: .24; transform: scale(1); } to { opacity: .5; transform: scale(1.03); } }
+@keyframes candle-flicker { from { opacity: .11; transform: scale(.94); } to { opacity: .26; transform: scale(1.08); } }
+@keyframes steam-rise { 0% { opacity: 0; transform: translateY(18%) rotate(18deg) scale(.7); } 35% { opacity: .62; } 100% { opacity: 0; transform: translateY(-54%) translateX(21%) rotate(30deg) scale(1.24); } }
+@keyframes notice-arrive { 0%, 20% { opacity: 0; transform: scale(.9); } 43% { opacity: .9; transform: scale(1.04); } 58%, 100% { opacity: .34; transform: scale(1); } }
+@keyframes end-text-reveal { 0%, 40% { opacity: .48; } 66%, 100% { opacity: 0; } }
+@keyframes grain { from { transform: translate3d(0,0,0); } to { transform: translate3d(4%, -3%, 0); } }
+@keyframes color-shift { from { opacity: .08; transform: translateX(-5%); } 50% { opacity: .38; } to { opacity: .16; transform: translateX(5%); } }
+@keyframes line-sweep { 0% { opacity: 0; transform: scaleX(0); } 23% { opacity: .78; } 70% { opacity: .35; } 100% { opacity: 0; transform: scaleX(1.7); } }
+@keyframes card-in { 0%, 8% { opacity: 0; transform: translateX(-17px); } 20%, 76% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; transform: translateX(8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+}

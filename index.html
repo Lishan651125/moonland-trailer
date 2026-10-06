@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>好好陪自己｜動畫試片</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="player-shell">
+      <section class="stage" aria-label="好好陪自己動畫試片">
+        <div class="scenes" id="scenes"></div>
+        <div class="film-grain" aria-hidden="true"></div>
+        <div class="letterbox" aria-hidden="true"></div>
+        <div class="opening-card" id="openingCard">
+          <p class="eyebrow">MOTION GRAPHICS TRAILER · 00:28</p>
+          <h1>在今天結束以前<br /><span>好好陪自己</span></h1>
+          <button class="start-button" id="startButton" type="button">播放預告片 <span>↗</span></button>
+          <p class="audio-note" id="audioNote">使用〈moonland〉音樂片段</p>
+        </div>
+        <button class="pause-button" id="pauseButton" type="button" aria-label="暫停動畫">Ⅱ</button>
+        <div class="caption" id="caption" aria-live="polite"></div>
+        <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+      </section>
+      <p class="hint">28 秒動畫試片・點擊右上角按鈕可暫停或播放</p>
+    </main>
+    <audio id="trailerAudio" preload="auto"></audio>
+    <script src="app.js"></script>
+  </body>
+</html>
